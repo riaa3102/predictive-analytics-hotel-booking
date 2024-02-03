@@ -1,0 +1,106 @@
+# ---------------------------------     Data Preprocessing and Feature Engineering     ---------------------------------
+
+preprocess:
+  month_to_season:
+    January: 'Winter'
+    February: 'Winter'
+    March: 'Spring'
+    April: 'Spring'
+    May: 'Spring'
+    June: 'Summer'
+    July: 'Summer'
+    August: 'Summer'
+    September: 'Fall'
+    October: 'Fall'
+    November: 'Fall'
+    December: 'Winter'
+
+transform:
+  target_column: 'is_canceled'
+  standard_scaler_columns: ['lead_time', 'arrival_date_year', 'arrival_date_week_number', 'arrival_date_day_of_month',
+                            'stays_in_weekend_nights', 'stays_in_week_nights', 'adults', 'children', 'babies',
+                            'is_repeated_guest', 'previous_cancellations', 'previous_bookings_not_canceled',
+                            'booking_changes', 'days_in_waiting_list', 'adr', 'required_car_parking_spaces',
+                            'total_of_special_requests', 'total_stay', 'total_guests', 'cancellation_rate']
+  one_hot_encoder_columns: ['hotel', 'market_segment', 'distribution_channel', 'customer_type', 'season']
+  ordinal_encoder_columns: ['arrival_date_month', 'meal', 'reserved_room_type', 'assigned_room_type']
+  target_encoder_columns: ['country', 'agent']
+  ordinal_encoder_categories:
+    arrival_date_month: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September',
+                         'October', 'November', 'December']
+    meal: ['Undefined', 'SC', 'BB', 'HB', 'FB' ]
+    # reserved_room_type: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'L', 'P']                                (original)
+    reserved_room_type: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'P']
+    assigned_room_type: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'P']
+
+# ---------------------------------                      MLflow                        ---------------------------------
+
+MLflow:
+  uri: "http://127.0.0.1:8000"
+  experiment_name: "Hotel Booking Demand"
+  artifact_path: "hotel_model"
+  registered_model_name: "tracking-quickstart"
+
+# ---------------------------------          Model Parameters and Grid Search          ---------------------------------
+
+train_test_split:
+  test_size: 0.2
+  random_state: 42
+
+GridSearchCV:
+  cv: 3
+  scoring: 'accuracy'
+  verbose: 2
+
+LogisticRegression:
+  params:
+    random_state: 42
+    solver: 'liblinear'
+    max_iter: 5000
+
+  param_grid:
+    C: [0.01, 0.1, 1, 10]
+
+DecisionTree:
+  params:
+    random_state: 42
+  param_grid:
+    min_samples_leaf: [2, 5, 10]
+    min_samples_split: [2, 5, 10]
+
+RandomForest:
+  params:
+    random_state: 42
+    n_estimators: 200
+    criterion: 'gini'
+  param_grid:
+    min_samples_leaf: [2, 5, 10]
+    min_samples_split: [2, 5, 10]
+
+XGBoost:
+  params:
+    random_state: 42
+    n_estimators: 200
+    booster: 'gbtree'
+  param_grid:
+    learning_rate: [0.1, 0.2, 0.4]
+
+CatBoost:
+  params:
+    random_state: 42
+    n_estimators: 200
+  param_grid:
+    learning_rate: [0.1, 0.2, 0.4]
+
+MLP:
+  params:
+    random_state: 42
+    hidden_layer_sizes: [200]
+    activation: 'relu'
+    solver: 'adam'
+    learning_rate: 'adaptive'
+    max_iter: 500
+
+  param_grid:
+    learning_rate_init: [0.001, 0.01, 0.1]
+
